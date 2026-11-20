@@ -1,151 +1,68 @@
-# Unity 3D Endless Runner Game
+# 赛博夜行者 · CyberEscapeRunner
 
-A beginner-to-intermediate Unity portfolio project built with clean C# scripts, third-person endless runner movement, procedural spawning, object pooling, scoring, UI menus, audio hooks, animation triggers, and a stylized low-poly environment workflow.
+> Unity 2022.3 LTS / C# / TextMeshPro · 3D 无尽跑酷 · 对象池 · 程序化生成 · FSM + 事件解耦 · AI 辅助开发（MCP）
 
-This project is designed for a Game Developer internship portfolio and resume showcase.
+![demo](media/demo.gif)
 
-## Features
+**完整玩法闭环**：三车道无尽跑酷——切道、跳跃、滑铲躲避障碍，收集金币；速度由 8 m/s 随时间渐进提升至 24 m/s；计分 = 距离 + 金币加权，`PlayerPrefs` 持久化最高分；主菜单 / 暂停 / 结算 / 重开完整 UI 与音频。
 
-- Third-person endless runner gameplay
-- Automatic forward running
-- 3-lane movement using `A/D` or arrow keys
-- Jump using `Spacebar`
-- Slide using `Left Ctrl` or `Right Ctrl`
-- Gradually increasing game speed
-- Procedural road generation
-- Random obstacle spawning
-- Multiple obstacle types: barrier, box, wall
-- Random coin spawning and coin counter
-- Distance score and coin score bonus
-- High score saving with `PlayerPrefs`
-- Main menu, pause menu, game over screen, restart, and quit buttons
-- Object pooling for roads, coins, obstacles, trees, and rocks
-- Audio hooks for background music, coin, jump, and game over sounds
-- Animator trigger support for run, jump, slide, and death animations
-- Unity Editor scene builder for fast setup
+| 标题画面（夜景） | 游玩中：跳跃躲避 + 吃金币 |
+|:---:|:---:|
+| ![title](media/screenshots/title-screen.png) | ![gameplay](media/screenshots/gameplay.png) |
 
-## Quick Start
+## 技术要点
 
-1. Open this folder in Unity Hub as a Unity project.
-2. Use Unity 2022 LTS or newer.
-3. Let Unity import packages and compile scripts.
-4. If Unity asks for TextMeshPro essentials, import them.
-5. In the Unity menu, click `Tools > Endless Runner > Build Complete Demo Scene`.
-6. Open `Assets/Scenes/MainScene.unity`.
-7. Press Play.
+- **通用对象池系统**：`Dictionary<string, Queue<GameObject>>` 多池管理 + 池配置表 + 容器分组，路面、障碍、金币、树木、岩石全部复用，消除运行时频繁 `Instantiate/Destroy` 带来的 GC 开销。
+- **程序化生成**：路面与障碍在玩家前方 **150 米**动态铺设、身后 **45 米**自动回收；三车道随机生成障碍与金币序列。
+- **架构解耦**：单例 `GameManager` + 游戏状态机（主菜单 / 游玩 / 暂停 / 结算）+ C# 事件（`OnGameStarted`、`OnScoreChanged`、`OnGameOver` 等），UI、音频、玩法互不依赖，可独立修改。
+- **难度曲线与计分**：`startingSpeed 8 m/s → maxSpeed 24 m/s` 渐进；距离分 + 金币加权分；`PlayerPrefs` 本地最高分。
+- **AI 辅助开发工作流（MCP）**：Trae AI IDE 经 MCP 协议直连 Unity 编辑器，以自然语言驱动编辑器脚本（`StarSkyBuilder` / `MainSceneNightUpgrade` / `StarSkyCapture`）批量生成夜景资产——自定义 `StarSkyDome.shader` 星空穹顶、流星雨粒子、篝火光效（`CampfireFlicker`）与月亮，全程未改动任何玩法代码。
 
-The builder creates the playable demo scene, materials, low-poly prefabs, UI panels, object pool entries, tags, player, camera, lighting, and manager objects.
+## 操作说明
 
-## Controls
+| 按键 | 功能 |
+|---|---|
+| A / D 或 ← / → | 三车道左右切换 |
+| 空格 | 跳跃（开始界面也可启动游戏） |
+| Ctrl | 滑铲 |
+| Esc | 暂停 / 恢复 |
 
-| Action | Key |
-| --- | --- |
-| Move Left | `A` or `Left Arrow` |
-| Move Right | `D` or `Right Arrow` |
-| Jump | `Spacebar` |
-| Slide | `Left Ctrl` or `Right Ctrl` |
-| Pause / Resume | `Escape` |
+## 运行
 
-## Folder Structure
+**方式一：Unity 编辑器**
 
-```text
-Unity-3D-Endless-Runner-Game/
-|-- Assets/
-|   |-- Art/
-|   |   |-- Marketing/
-|   |   `-- Materials/
-|   |-- Audio/
-|   |-- Editor/
-|   |   `-- EndlessRunnerSceneBuilder.cs
-|   |-- Prefabs/
-|   |   `-- PREFAB_SETUP.md
-|   |-- Scenes/
-|   |   `-- SCENE_HIERARCHY.md
-|   `-- Scripts/
-|       |-- Camera/
-|       |   `-- FollowCamera.cs
-|       |-- Core/
-|       |   `-- GameManager.cs
-|       |-- Player/
-|       |   `-- PlayerController.cs
-|       |-- Systems/
-|       |   |-- AudioManager.cs
-|       |   |-- CoinSystem.cs
-|       |   |-- ObjectPool.cs
-|       |   |-- Obstacle.cs
-|       |   |-- PooledObject.cs
-|       |   `-- SpawnManager.cs
-|       `-- UI/
-|           `-- UIManager.cs
-|-- Packages/
-|   `-- manifest.json
-|-- ProjectSettings/
-|   `-- ProjectVersion.txt
-|-- .gitignore
-`-- README.md
+用 Unity Hub 安装 **2022.3.62f3c1**，打开本工程，进入 `Assets/Scenes/MainScene.unity` 点击 Play。首次打开如提示导入 TextMeshPro essentials，确认导入即可。
+
+**方式二：命令行构建独立可执行文件**
+
+```powershell
+Unity.exe -batchmode -quit -projectPath <工程路径> `
+  -executeMethod BuildScript.BuildWin64 -logFile build.log
+# 产物：Builds/CyberEscapeRunner/CyberEscapeRunner.exe
 ```
 
-## Core Scripts
+## 项目结构
 
-`PlayerController.cs` handles lane switching, auto-running, jumping, sliding, and obstacle collision.
-
-`GameManager.cs` controls game state, score, speed progression, high score saving, pause, restart, quit, and game over.
-
-`UIManager.cs` manages the main menu, HUD, pause menu, game over screen, score, high score, and coin display.
-
-`SpawnManager.cs` procedurally spawns road tiles, obstacles, coins, trees, and rocks ahead of the player.
-
-`ObjectPool.cs` reuses objects instead of repeatedly instantiating and destroying them during gameplay.
-
-`CoinSystem.cs` handles coin rotation, collection, scoring, sound, and returning coins to the pool.
-
-`AudioManager.cs` plays background music and game sound effects when clips are assigned.
-
-`FollowCamera.cs` provides a smooth third-person chase camera.
-
-`EndlessRunnerSceneBuilder.cs` builds a complete playable demo scene from the Unity editor menu.
-
-## Audio Setup
-
-The game runs without audio clips, but the audio hooks are ready.
-
-To add sound:
-
-1. Place clips in `Assets/Audio`.
-2. Open `MainScene`.
-3. Select `Managers/AudioManager`.
-4. Assign background music, coin, jump, and game over clips.
-
-## Animation Setup
-
-The game works without a character animator, but it supports these animator parameters:
-
-| Parameter | Type | Used For |
-| --- | --- | --- |
-| `IsRunning` | Bool | Running animation |
-| `Jump` | Trigger | Jump animation |
-| `Slide` | Trigger | Slide animation |
-| `Death` | Trigger | Death animation |
-
-Assign an Animator to the player when you add a custom character model.
-
-## GitHub Upload
-
-Upload the full `Unity-3D-Endless-Runner-Game` folder to a GitHub repository.
-
-Suggested repository name:
-
-```text
-Unity-3D-Endless-Runner-Game
+```
+CyberEscapeRunner/
+├── Assets/
+│   ├── Art/                 # 材质 + StarSky/（自定义星空穹顶 Shader 等）
+│   ├── Editor/              # 编辑器脚本（场景构建、夜景升级、截图验证、CLI 构建）
+│   ├── Prefabs/             # 路面 / 障碍 / 金币 / 树木 / 岩石预制体
+│   ├── Scenes/              # MainScene（夜景完整玩法）、StarSky（艺术展示）
+│   ├── Scripts/
+│   │   ├── Core/GameManager.cs        # 单例 + 状态机 + C# 事件 + 计分
+│   │   ├── Player/PlayerController.cs # 三车道移动 / 跳跃 / 滑铲
+│   │   ├── Systems/                   # ObjectPool / SpawnManager / CoinSystem ...
+│   │   ├── UI/UIManager.cs            # 菜单 / 暂停 / 结算面板
+│   │   └── CampfireFlicker.cs         # 篝火光效
+│   └── TextMesh Pro/
+├── ProjectSettings/         # 含 McpUnitySettings.json（MCP 配置）
+└── tools/capture-demo.ps1   # 自动化演示素材采集（窗口注入按键 + PrintWindow 抓帧）
 ```
 
-Suggested portfolio link:
+## 说明
 
-```text
-https://github.com/shivamkr67/Unity-3D-Endless-Runner-Game
-```
-
-## Resume Line
-
-**3D Endless Runner Game | Unity 3D, C#, Blender**  
-Built a third-person endless runner with 3-lane movement, jumping, sliding, procedural obstacle and coin spawning, object pooling, UI menus, audio events, high score saving, and stylized low-poly environment assets.
+- 基于开源模板 unity-3d-endless-runner-game 搭建并二次开发（对象池、生成规则、状态机与事件解耦、难度与计分参数、AI 辅助夜景场景、CLI 构建与演示采集工具链均在模板基础上实现 / 调整）。
+- `media/` 内演示素材由 `tools/capture-demo.ps1` 自动采集：启动构建产物、注入菜单点击与键盘输入、`PrintWindow` 逐帧抓取，ffmpeg 合成 GIF / MP4。
+- 学习 / 作品集用途，美术资源版权归原作者所有。

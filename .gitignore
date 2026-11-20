@@ -12,6 +12,10 @@
 # Local presentation materials (not part of the game)
 ppt/
 
+# Raw capture frames (final GIF/MP4/screenshots in media/ are kept)
+media/capture/
+media/seq/
+
 # IDE / OS
 .vs/
 .idea/
